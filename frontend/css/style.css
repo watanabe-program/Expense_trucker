@@ -1,0 +1,286 @@
+/* 全体のリセット */
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #ffffff;
+    font-family: 'Noto Sans JP', sans-serif;
+    justify-content: center;
+    align-items: center; 
+    font-family: "Noto Sans JP", "Hiragino Kaku Gothic ProN", "ヒラギノ角ゴ ProN W3", "Meiryo", "メイリオ", sans-serif;
+  
+    /* 読みやすさをさらに向上させる設定 */
+    line-height: 1.6;        /* 行間を少し広げる */
+    letter-spacing: 0.05em;  /* 文字の間隔をわずかに広げる */
+    color: #333333;          /* 真っ黒(#000)より少しグレーの方が目が疲れにくい */
+    height: 100vh;
+}
+
+/* 共通部分 */
+.btn {
+    width: 120px;
+    height: 44px;
+    border-radius: 15px;
+    border: 1px solid #000000;
+    font-size: 20px;
+    font-weight: bold;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    text-decoration: none;
+    transition: opacity 0.2s;
+    color: #000000;
+}
+
+.btn:hover {
+  opacity: 0.8;
+}
+
+/* 戻るボタン */
+.btn_back {
+  background-color: #ededed;
+}
+
+.top_back {
+    position: absolute;
+    left: 80px; 
+    top: 40px;
+    z-index: 10;
+}
+
+/* 登録ボタン */
+.btn_submit {
+  background-color: #a7ceff;
+  color: #000000;
+}
+
+.btn_submit:hover {
+    background-color: #8dbdff;
+}
+
+.input_submit {
+    margin: 40px auto 0;
+}
+
+/* 削除ボタン */
+.btn_delete {
+  background-color: #FF7676;
+  color: #000000;
+}
+
+.btn_delete:hover {
+    background-color: #ff9999; /* #FF7676を少し明るくした色 */
+    opacity: 1.0;
+}
+
+
+
+/* ボタンエリア */
+.button_group {
+    display: flex;
+    gap: 80px;
+    margin: 0 auto;
+}
+
+.button_group_edit {
+    display: flex;
+    gap: 80px;
+    margin: 0 auto;
+}
+
+  /* ヘッダー部分 */
+.header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 40px;
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.title {
+    font-size: 32px;
+    font-weight: bold;
+    margin: -180px;
+}
+
+/* フォームエリア */
+.form_area {
+    width: 100%;
+    max-width: 400px; /* 入力項目の幅を調整 */
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.input_group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    position: relative;
+}
+
+.label_row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.label_text {
+    font-size: 18px;
+    font-weight: 500;
+}
+
+/* 入力欄の共通スタイル */
+.input_field {
+    width: 100%;
+    height: 36px;
+    border: 1px solid #000000;
+    border-radius: 5px;
+    padding: 0 15px;
+    box-sizing: border-box;
+    font-size: 16px;
+}
+
+.required_tag {
+    font-size: 12px;
+    color: #ff0000;
+    border: 1px solid #ff0000;
+    border-radius: 5px;
+    padding: 2px 8px;
+}
+
+
+/* TOPページ */
+.top {
+    background-color: #ffffff;
+    /* 横幅を広げる（1440px制限をなくすか、もっと大きくする） */
+    width: 100%; 
+    max-width: 1800px; 
+
+    /* 高さを画面に合わせる */
+    height: 100vh;
+    padding: 120px;
+    box-sizing: border-box;
+    
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* 縦方向も中央に */
+    align-items: center;
+}
+
+.expencetracker {
+    margin-top: -80px;
+    color: #000000;
+    font-size: clamp(32px, 8vw, 80px); /* 文字も少し存在感を出しました */
+    font-weight: bold;
+    margin-bottom: 100px;
+    text-align: center;
+}
+
+.menu {
+    width: 100%;
+    max-width: 500px; /* ボタンエリアも少し広げるとバランスが良いです */
+    display: flex;
+    flex-direction: column;
+    gap: 48px;
+}
+
+/* メニューボタン */
+.menu_button {
+    width: 100%;
+    height: 60px;
+    background-color: #d4e6ff;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    border: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: transform 0.2s, background-color 0.2s;
+    text-decoration: none;
+}
+
+/* ホバー演出 */
+.menu_button:hover {
+    background-color: #bad7ff;
+    transform: translateY(-2px);
+}
+
+.button_text {
+    color: #000000;
+    font-size: 20px; /* 少しだけ大きく */
+    font-weight: 500;
+    letter-spacing: 4px;
+    padding-left: 4px;
+}
+
+.container {
+    background-color: #ffffff;
+    width: 100%;
+    max-width: 1800px;
+    height: 100vh;
+    padding: 40px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    position: relative; /* 戻るボタンの基準 */
+}
+
+/* 削除確認専用のスタイル */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4); /* 背景を薄暗くする */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.confirm_card {
+    background-color: #EEEEEE;
+    width: 520px; /* 枠の幅 */
+    padding: 48px 24px;
+    text-align: center;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+.confirm_text {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 40px;
+    color: #000;
+}
+
+.confirm_buttons {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+}
+
+.error_card {
+    background-color: #FF7676;
+    width: 600px; /* 枠の幅 */
+    padding: 60px 40px;
+    text-align: center;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+.error_text {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 40px;
+    color: #000;
+}
+
+.error_button {
+    justify-content: center;
+    margin: 0 auto;
+}
+

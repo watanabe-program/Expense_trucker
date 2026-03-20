@@ -1,0 +1,144 @@
+/* フォームエリアの幅を横並び用に拡張 */
+.summary_controls {
+    max-width: 600px !important; /* 横並びにするため少し広げる */
+}
+
+/* 横並び用のレイアウト */
+.flex_row {
+    display: flex;
+    align-items: center;
+    gap: 20px; /* 項目間の余白 */
+    width: 100%;
+}
+
+.flex_1 {
+    flex: 1; /* 各項目を均等な幅に */
+}
+
+/* 期間の「～」の調整 */
+.range_separator {
+    font-size: 18px;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+/* --- 以下、集計結果のスタイル（前回同様） --- */
+.separator {
+    width: 100%;
+    max-width: 600px;
+    border: none;
+    border-top: 1px solid #ccc;
+    margin: 4px auto;
+}
+
+.result_section {
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.result_grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.result_item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    border: 1px solid #000;
+    border-radius: 8px;
+    background-color: #fff;
+}
+
+.category_name {
+    font-weight: bold;
+    border-right: 1px solid #000;
+    padding-right: 10px;
+    flex: 1;
+}
+
+.category_amount {
+    flex: 2;
+    text-align: right;
+    font-size: 1.1rem;
+}
+
+.total_row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    background-color: #f0f6ff;
+    border: 2px solid #a7ceff;
+    border-radius: 10px;
+    font-size: 1.4rem;
+    font-weight: bold;
+}
+
+
+/* --- リスト（支出一覧）固有のスタイル --- */
+.list_container {
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+    border: 1px solid #000;
+    border-radius: 8px;
+    background-color: #fff;
+    overflow: hidden; /* 角丸を効かせる */
+}
+
+.list_header, .list_row {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.list_header {
+    background-color: #f8f8f8;
+    font-weight: bold;
+    border-bottom: 2px solid #000;
+}
+
+.list_row:last-child {
+    border-bottom: none;
+}
+
+/* 各列の幅調整 */
+.col_date { flex: 1.5; font-size: 14px; }
+.col_category { flex: 1.5; font-weight: 500; }
+.col_amount { 
+    flex: 2; 
+    text-align: right; 
+    font-weight: bold; 
+    font-size: 1.1rem;
+    padding-right: 15px;
+}
+.col_amount small { font-size: 0.7rem; margin-left: 3px; }
+.col_action { flex: 1; text-align: center; }
+
+/* 編集ボタン（ご提示のグレー色） */
+.btn_edit_small {
+    background-color: #ededed;
+    border: 1px solid #000;
+    border-radius: 10px;
+    padding: 4px 10px;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.btn_edit_small:hover {
+    opacity: 0.7;
+}
+
+/* モバイル表示で文字が重ならないように調整 */
+@media (max-width: 480px) {
+    .col_date, .col_category { font-size: 12px; }
+    .col_amount { font-size: 14px; }
+}

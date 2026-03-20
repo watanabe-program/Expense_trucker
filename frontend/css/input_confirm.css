@@ -1,0 +1,56 @@
+/*  支出入力確認ページ */
+.container_confirm {
+    background-color: #ededed;
+    width: 100%;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+.confirm_box {
+    width: 100%;
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 40px;
+    border: 1px solid #000000;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-height: 100%;
+  }
+
+.confirm_title {
+    font-size: 24px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    color: #000000;
+}
+
+/* 確認項目の1行 */
+.confirm_item {
+    display: flex;
+    align-items: center;
+    padding-bottom: 10px;
+}
+
+.item_label {
+    width: 120px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+}
+
+.item_value {
+    flex: 1;
+    font-size: 18px;
+    background-color: #ffffff;
+    padding: 8px 15px;
+    border: 1px solid #000000;
+    border-radius: 5px;
+    min-height: 20px;
+}
+
+.currency {
+    margin-left: 10px;
+    font-size: 18px;
+}

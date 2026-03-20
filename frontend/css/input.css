@@ -1,0 +1,24 @@
+/*  支出入力 */
+.input {
+    /* paddingを上下だけにして、左右はcontainerに任せる */
+    padding: 20px 0; 
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: center; 
+    align-items: center;
+    position: relative; /* 子要素のabsoluteの基準にする */
+    height: 100vh;
+}
+
+.amount_row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.currency {
+    font-size: 18px;
+}
+
+
