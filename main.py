@@ -5,4 +5,4 @@ webview.create_window(
   "frontend/index.html"
 )
 
-webview.start()
+webview.start(debug=True) 

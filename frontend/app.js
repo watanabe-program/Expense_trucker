@@ -1,18 +1,70 @@
-//forontend処理
+//グローバル変数で定義しておく
+let errorMessage = ""
+let itemId = ""
+let paidAt = ""
+let amount = ""
+let paymentMethodId = ""
+let place = ""
+let summaryFrom = ""
+let summaryTo = ""
+
+
+let expensesList = [
+  {
+    id: 1,
+    date: "2025-02-02",
+    itemId: 1,
+    amount: 5000,
+    paymentMethodId: 1,
+    place: "スーパー"
+  },
+  {
+    id: 2,
+    date: "2025-02-02",
+    itemId: 3,
+    amount: 1200,
+    paymentMethodId: 2,
+    place: "ドラッグストア"
+  }
+];
+
+let itemsList = [
+  { itemId: 1, name: "食費" },
+  { itemId: 2, name: "水光熱費" },
+  { itemId: 3, name: "その他" }
+];
+
+let paymentMethodList = [
+  { paymentMethodId: 1, name: "現金" },
+  { paymentMethodId: 2, name: "クレジットカード" },
+  { paymentMethodId: 3, name: "コード決済" },
+  { paymentMethodId: 4, name: "その他" }
+];
+
+
 //TOPページ
 function showHome(){
+    //ホーム画面に来たらリセット
+    errorMessage = ""
+    itemId = ""
+    paidAt = ""
+    amount = ""
+    paymentMethodId = ""
+    place = ""
+    summaryFrom = ""
+    summaryTo = ""
   document.getElementById("app").innerHTML = `
     <div class="top">
     <h1 class="expencetracker">Expense Tracker</h1>
 
     <nav class="menu">
-        <button onclick= "showInput()" class="menu_button">
+        <button onclick= "showInput(itemId,paidAt,amount,paymentMethodId,place)" class="menu_button">
             <span class="button_text">支出入力</span>
         </button>
-        <button onclick= "showSummery()" class="menu_button">
+        <button onclick= "showSummary(summaryFrom,summaryTo,place,paymentMethodId)" class="menu_button">
             <span class="button_text">支出集計</span>
         </button>
-        <button onclick= "showList()" class="menu_button">
+        <button onclick= "showList(summaryFrom,summaryTo,place,paymentMethodId)" class="menu_button">
             <span class="button_text">支出一覧</span>
         </button>
     </nav>
@@ -21,7 +73,13 @@ function showHome(){
 }
 
 //支出入力ページ
-function showInput(){
+function showInput(itemId,paidAt,amount,paymentMethodId,place){
+    //支出マスタ
+    let optionsItem = createOptions(itemsList, itemId, "itemId", "name");
+    //支払方法マスタ
+    let optionsPaymentMethod = createOptions(paymentMethodList,paymentMethodId,"paymentMethodId","name");
+
+
   document.getElementById("app").innerHTML = `
     <div class="input">
         <div class="container">
@@ -35,14 +93,17 @@ function showInput(){
                         <span class="label_text">費用名</span>
                         <span class="required_tag">必須</span>
                     </div>
-                    <input type="text" class="input_field" placeholder="例：食費">
+                    <select id="item" class="input_field">
+                    <option value="">選択してください</option>
+                    ${optionsItem}
+                    </select>
                 </div>
                 <div class="input_group">
                     <div class="label_row">
                         <span class="label_text">支払日時</span>
                         <span class="required_tag">必須</span>
                     </div>
-                    <input type="date" class="input_field">
+                    <input id = "paid_at" type="date" class="input_field" value = "${paidAt || ''}">
                 </div>
                 <div class="input_group">
                     <div class="label_row">
@@ -50,7 +111,7 @@ function showInput(){
                         <span class="required_tag">必須</span>
                     </div>
                     <div class="amount_row">
-                        <input type="number" class="input_field" placeholder="0">
+                        <input id = "amount" type="number" class="input_field" placeholder="0" value = "${amount || ''}">
                         <span class="currency">円</span>
                     </div>
                 </div>
@@ -58,29 +119,49 @@ function showInput(){
                     <div class="label_row">
                         <span class="label_text">支払方法</span>
                     </div>
-                    <select class="input_field">
+                    <select id = "payment_method" class="input_field">
                         <option value="">選択してください</option>
-                        <option value="cash">現金</option>
-                        <option value="card">クレジットカード</option>
-                        <option value="qr">QR決済</option>
+                        ${optionsPaymentMethod}
                     </select>
                 </div>
                 <div class="input_group">
                     <div class="label_row">
                         <span class="label_text">場所</span>
                     </div>
-                    <input type="text" class="input_field" placeholder="例：スーパー">
+                    <input id = "place" type="text" class="input_field" placeholder="例：スーパー" value = "${place || ''}">
                 </div>
 
-                <button onclick="showInputConfirm()"class="input_submit btn btn_submit">登録</button>
+                <button onclick="saveExpense()" class="input_submit btn btn_submit">登録</button>
             </div>
         </div>
     </div>
     `
 }
 
+function saveExpense(){
+    itemId = document.getElementById("item").value;
+    paidAt = document.getElementById("paid_at").value;
+    amount = document.getElementById("amount").value;
+    paymentMethodId = document.getElementById("payment_method").value;
+    place = document.getElementById("place").value;
+    console.log(itemId,paidAt,amount,paymentMethodId, place)
+    if (!itemId || !paidAt || !amount) { 
+        errorMessage = "必須項目が未入力です"
+        showError(errorMessage)
+    } else {
+        showInputConfirm(itemId,paidAt,amount,paymentMethodId,place)
+    }
+    
+}
+
 //入力確認ページ
-function showInputConfirm(){
+function showInputConfirm(itemId,paidAt,amount,paymentMethodId,place){
+    let foundItem = itemsList.find(m => String(m.itemId) === String(itemId));
+    let item = foundItem ? foundItem.name : "";
+    let foundPaymentMethod = paymentMethodList.find(m2 => String(m2.paymentMethodId) === String(paymentMethodId));
+    let paymentMethod = foundItem ? foundPaymentMethod.name : "";
+    
+
   document.getElementById("app").innerHTML = `
     <div class="container_confirm">
         <div class="confirm_box">
@@ -89,36 +170,45 @@ function showInputConfirm(){
             </div>
             <div class="confirm_item">
                 <span class="item_label">費用名</span>
-                <span class="item_value">電気代・水道代</span>
+                <span class="item_value">${item}</span>
             </div>
             <div class="confirm_item">
                 <span class="item_label">支払日時</span>
-                <span class="item_value">2025/02/19</span>
+                <span class="item_value">${paidAt}</span>
             </div>
             <div class="confirm_item">
                 <span class="item_label">金額</span>
-                <span class="item_value">6,000</span>
+                <span class="item_value">${amount}</span>
                 <span class="currency">円</span>
             </div>
             <div class="confirm_item">
                 <span class="item_label">支払方法</span>
-                <span class="item_value">クレジットカード</span>
+                <span class="item_value">${paymentMethod || "（未入力）"}</span>
             </div>
             <div class="confirm_item">
                 <span class="item_label">場所</span>
-                <span class="item_value">（未入力）</span>
+                <span class="item_value">${place || "（未入力）"}</span>
             </div>
             <div class="button_group">
-                <button onclick="showInput()" class="btn btn_back">戻る</button>
-                <button onclick="showInput()" class="btn btn_submit">登録</button>
+                <button onclick="showInput(itemId,paidAt,amount,paymentMethodId,place)" class="btn btn_back">戻る</button>
+                <button onclick="insertExpense(itemId,paidAt,amount,paymentMethodId,place)" class="btn btn_submit">登録</button>
             </div>
         </div>
     </div>
     `
 }
 
+function insertExpense(itemId,paidAt,amount,paymentMethodId,place){
+    console.log(itemId,paidAt,amount,paymentMethodId,place)
+    showInput()
+    
+}
+
+
 //支出集計ページ
-function showSummery(){
+function showSummary(summaryFrom,summaryTo,place,paymentMethodId){
+    //支払方法マスタ
+    let optionsPaymentMethod = createOptions(paymentMethodList,paymentMethodId,"paymentMethodId","name");
   document.getElementById("app").innerHTML = `
     <div class="container">
         <button onclick="showHome()" class="top_back btn btn_back">戻る</button>
@@ -134,9 +224,9 @@ function showSummery(){
                     <span class="required_tag">必須</span>
                 </div>
                 <div class="flex_row">
-                    <input type="date" class="input_field">
+                    <input id = "summary_from" type="date" class="input_field" value = "${summaryFrom || ''}">
                     <span class="range_separator">～</span>
-                    <input type="date" class="input_field">
+                    <input id = "summary_to" type="date" class="input_field" value = "${summaryTo || ''}">
                 </div>
             </div>
 
@@ -145,32 +235,45 @@ function showSummery(){
                     <div class="label_row">
                         <span class="label_text">場所</span>
                     </div>
-                    <input type="text" class="input_field" placeholder="例：スーパー">
+                    <input id = "place" type="text" class="input_field" placeholder="例：スーパー" value = "${place || ""}">
                 </div>
                 <div class="input_group flex_1">
                     <div class="label_row">
                         <span class="label_text">支払方法</span>
                     </div>
-                    <select class="input_field">
-                        <option value="">すべて</option>
-                        <option value="cash">現金</option>
-                        <option value="card">クレジットカード</option>
-                        <option value="qr">QR決済</option>
+                    <select id = "payment_method" class="input_field">
+                    <option value="">すべて</option>
+                    ${optionsPaymentMethod}
                     </select>
                 </div>
             </div>
 
-            <button onclick="summeryExcecute()" class="btn btn_submit" style="margin: 20px auto;">集計</button>
+            <button onclick="summaryExcecute(summaryFrom,summaryTo,place,paymentMethod)" class="btn btn_submit" style="margin: 20px auto;">集計</button>
         </div>
 
         <hr class="separator">
         <div id = "result">
         </div>
     `
+
+}
+
+function summaryExcecute(summaryFrom,summaryTo,place,paymentMethodId){
+    summaryFrom = document.getElementById("summary_from").value;
+    summaryTo = document.getElementById("summary_to").value;
+    place = document.getElementById("place").value;
+    paymentMethodId = document.getElementById("payment_method").value;
+
+    if(!summaryFrom || !summaryTo){
+        errorMessage = "必須項目が未入力です"
+        showError(errorMessage)
+    }else{
+        summaryResultShow(summaryFrom,summaryTo,place,paymentMethodId)
+    }
 }
 
 //支出集計
-function summeryExcecute(){
+function summaryResultShow(summaryFrom,summaryTo,place,paymentMethodId){
   document.getElementById("result").innerHTML = `
         <div class="result_section">
             <h2 class="label_text" style="margin-bottom: 20px;">集計結果</h2>
@@ -201,10 +304,13 @@ function summeryExcecute(){
         </div>
     </div>
     `
+    console.log(summaryFrom,summaryTo,place,paymentMethodId)
 }
 
+
 //支出一覧ページ
-function showList(){
+function showList(summaryFrom,summaryTo,place,paymentMethodId){
+let optionsPaymentMethod = createOptions(paymentMethodList,paymentMethodId,"paymentMethodId","name");
   document.getElementById("app").innerHTML = `
     <div class="container">
     <button onclick="showHome()" class="top_back btn btn_back">戻る</button>
@@ -220,29 +326,27 @@ function showList(){
             <span class="required_tag">必須</span>
         </div>
         <div class="flex_row">
-            <input type="date" class="input_field">
+            <input id = "summary_from" type="date" class="input_field" value = "${summaryFrom || ''}">
             <span class="range_separator">～</span>
-            <input type="date" class="input_field">
+            <input id = "summary_to" type="date" class="input_field" value = "${summaryTo || ''}">
         </div>
         </div>
 
         <div class="flex_row">
         <div class="input_group flex_1">
             <div class="label_row"><span class="label_text">場所</span></div>
-            <input type="text" class="input_field" placeholder="例：スーパー">
+            <input id = "place" type="text" class="input_field" placeholder="例：スーパー" value = "${place || ""}">
         </div>
-        <div class="input_group flex_1">
+        <div id = "payment_method" class="input_group flex_1">
             <div class="label_row"><span class="label_text">支払方法</span></div>
-            <select class="input_field">
+            <select id = "payment_method" class="input_field">
             <option value="">すべて</option>
-            <option value="cash">現金</option>
-            <option value="card">カード</option>
-            <option value="qr">QR決済</option>
+            ${optionsPaymentMethod}
             </select>
         </div>
         </div>
 
-        <button onclick = "listExcecute()" class="btn btn_submit" style="margin: 20px auto;">検索</button>
+        <button onclick = "listExcecute(summaryFrom,summaryTo,place,paymentMethodId)" class="btn btn_submit" style="margin: 20px auto;">検索</button>
     </div>
 
     <hr class="separator">
@@ -252,45 +356,75 @@ function showList(){
     `
 }
 
+function listExcecute(summaryFrom,summaryTo,place,paymentMethodId){
+    summaryFrom = document.getElementById("summary_from").value;
+    summaryTo = document.getElementById("summary_to").value;
+    place = document.getElementById("place").value;
+    paymentMethodId = document.getElementById("payment_method").value;
+
+    if(!summaryFrom || !summaryTo){
+        errorMessage = "必須項目が未入力です"
+        showError(errorMessage)
+    }else{
+        listResultShow(summaryFrom,summaryTo,place,paymentMethodId)
+    }
+}
+
 //一覧結果表示
-function listExcecute(){
+function listResultShow(){
+  let rows = "";
+  
+  expensesList.forEach(exp => {
+    let item = itemsList.find(m => m.itemId == exp.itemId);
+    rows += `
+      <div class="list_row">
+        <div class="col_date">${exp.date}</div>
+        <div class="col_category">${item ? item.name : ""}</div>
+        <div class="col_amount">${exp.amount}<small>円</small></div>
+        <div class="col_action">
+          <button onclick="goEdit(${exp.id})" class="btn_edit_small">編集</button>
+        </div>
+      </div>
+    `;
+  });
+
   document.getElementById("result").innerHTML = `
     <div class="result_section">
-        <h2 class="label_text" style="margin-bottom: 20px;">検索結果</h2>
-        
-        <div class="list_container">
+      <h2 class="label_text">検索結果</h2>
+
+      <div class="list_container">
         <div class="list_header">
-            <div class="col_date">日付</div>
-            <div class="col_category">経費</div>
-            <div class="col_amount">金額</div>
-            <div class="col_action"></div>
+          <div class="col_date">日付</div>
+          <div class="col_category">経費</div>
+          <div class="col_amount">金額</div>
+          <div class="col_action"></div>
         </div>
 
-        <div class="list_row">
-            <div class="col_date">2025/02/02</div>
-            <div class="col_category">食費</div>
-            <div class="col_amount">5,000<small>円</small></div>
-            <div class="col_action">
-            <button onclick = "showEdit()" class="btn_edit_small">編集</button>
-            </div>
-        </div>
+        ${rows}
+      </div>
+    </div>
+  `;
+}
 
-        <div class="list_row">
-            <div class="col_date">2025/02/02</div>
-            <div class="col_category">日用品</div>
-            <div class="col_amount">1,200<small>円</small></div>
-            <div class="col_action">
-            <button onclick = "showEdit()" class="btn_edit_small">編集</button>
-            </div>
-        </div>
-        </div>
-    </div>
-    </div>
-    `
+function goEdit(id){
+  const data = expensesList.find(e => e.id === id);
+
+    showEdit(
+    data.itemId,
+    data.date,
+    data.amount,
+    data.paymentMethodId,
+    data.place
+  );
 }
 
 //支出編集ページ
-function showEdit(){
+function showEdit(itemId,paidAt,amount,paymentMethodId,place){
+    //支出マスタ
+    let optionsItem = createOptions(itemsList, itemId, "itemId", "name");
+    //支払方法マスタ
+    let optionsPaymentMethod = createOptions(paymentMethodList,paymentMethodId,"paymentMethodId","name");
+
   document.getElementById("app").innerHTML = `
     <div class="input">
         <div class="container">
@@ -304,14 +438,17 @@ function showEdit(){
                         <span class="label_text">費用名</span>
                         <span class="required_tag">必須</span>
                     </div>
-                    <input type="text" class="input_field" placeholder="例：食費">
+                    <select id="item" class="input_field">
+                    <option value="">選択してください</option>
+                    ${optionsItem}
+                    </select>
                 </div>
                 <div class="input_group">
                     <div class="label_row">
                         <span class="label_text">支払日時</span>
                         <span class="required_tag">必須</span>
                     </div>
-                    <input type="date" class="input_field">
+                    <input id = "paid_at" type="date" class="input_field" value = "${paidAt || ''}">
                 </div>
                 <div class="input_group">
                     <div class="label_row">
@@ -319,7 +456,7 @@ function showEdit(){
                         <span class="required_tag">必須</span>
                     </div>
                     <div class="amount_row">
-                        <input type="number" class="input_field" placeholder="0">
+                        <input id = "amount" type="number" class="input_field" placeholder="0" value = "${amount || ''}">
                         <span class="currency">円</span>
                     </div>
                 </div>
@@ -327,22 +464,20 @@ function showEdit(){
                     <div class="label_row">
                         <span class="label_text">支払方法</span>
                     </div>
-                    <select class="input_field">
+                    <select id = "payment_method" class="input_field">
                         <option value="">選択してください</option>
-                        <option value="cash">現金</option>
-                        <option value="card">クレジットカード</option>
-                        <option value="qr">QR決済</option>
+                        ${optionsPaymentMethod}
                     </select>
                 </div>
                 <div class="input_group">
                     <div class="label_row">
                         <span class="label_text">場所</span>
                     </div>
-                    <input type="text" class="input_field" placeholder="例：スーパー">
+                    <input id = "place" type="text" class="input_field" placeholder="例：スーパー" value = "${place || ''}">
                 </div>
                 <div class="button_group_edit">
-                    <button onclick="showDeleteConfirm()" class="input_submit btn btn_delete">削除</a></button>
-                    <button onclick="showInputConfirm()" class="input_submit btn btn_submit">登録</a></button>
+                    <button onclick="showDeleteConfirm()" class="input_submit btn btn_delete">削除</button>
+                    <button onclick="showInputConfirm()" class="input_submit btn btn_submit">登録</button>
                 </div>
             </div>
         </div>
@@ -386,11 +521,26 @@ function showError(){
   document.getElementById("dialog").innerHTML = `
     <div class="overlay">
     <div class="error_card">
-        <p class="error_text">必須項目で未入力の項目があります<br>入力し直してください</p>
+        <p class="error_text">${errorMessage}</p>
         <button onclick="closeDialog()" class="btn error_button">戻る</button>          
     </div>
     </div>
     `
+}
+
+//関数
+function createOptions(list, selectedId, valueKey, nameKey){
+  let options = '';
+
+  list.forEach(m => {
+    options += `
+      <option value="${m[valueKey]}" ${String(selectedId) === String(m[valueKey]) ? "selected" : ""}>
+        ${m[nameKey]}
+      </option>
+    `;
+  });
+
+  return options;
 }
 
 window.onload = function(){

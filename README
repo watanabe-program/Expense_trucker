@@ -5,6 +5,7 @@ python -m venv venv プロジェクトフォルダで実行して仮想化作成
 venv\Scripts\activate プロジェクトフォルダで実行して仮想環境を有効化
 必要なライブラリを入れる
 pip freeze > requirements.txt ライブラリを別端末にも入れるために作成(新しいライブラリを入れるたびに実行)
+pip install -r requirements.txt installするとき
 deactiveteで終了
 
 Githubユーザー名:WatanabeTough リポジトリ名:Expense_Trucker
