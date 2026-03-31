@@ -5,8 +5,19 @@ let paidAt = ""
 let amount = ""
 let paymentMethodId = ""
 let place = ""
-let summaryFrom = ""
-let summaryTo = ""
+let summaryCondition = {
+  summaryFrom: "",
+  summaryTo: "",
+  place: "",
+  paymentMethodId: ""
+};
+let listCondition = {
+  summaryFrom: "",
+  summaryTo: "",
+  place: "",
+  paymentMethodId: ""
+};
+const today = new Date();
 
 
 let expensesList = [
@@ -50,9 +61,9 @@ function showHome(){
     paidAt = ""
     amount = ""
     paymentMethodId = ""
-    place = ""
-    summaryFrom = ""
-    summaryTo = ""
+    place = "",
+    summaryCondition = {summaryFrom: "",summaryTo: "",place: "",paymentMethodId: ""};
+    listCondition = {summaryFrom: "",summaryTo: "",place: "",paymentMethodId: ""};
   document.getElementById("app").innerHTML = `
     <div class="top">
     <h1 class="expencetracker">Expense Tracker</h1>
@@ -61,10 +72,10 @@ function showHome(){
         <button onclick= "showInput(itemId,paidAt,amount,paymentMethodId,place)" class="menu_button">
             <span class="button_text">支出入力</span>
         </button>
-        <button onclick= "showSummary(summaryFrom,summaryTo,place,paymentMethodId)" class="menu_button">
+        <button onclick= "showSummary()" class="menu_button">
             <span class="button_text">支出集計</span>
         </button>
-        <button onclick= "showList(summaryFrom,summaryTo,place,paymentMethodId)" class="menu_button">
+        <button onclick= "showList()" class="menu_button">
             <span class="button_text">支出一覧</span>
         </button>
     </nav>
@@ -206,7 +217,8 @@ function insertExpense(itemId,paidAt,amount,paymentMethodId,place){
 
 
 //支出集計ページ
-function showSummary(summaryFrom,summaryTo,place,paymentMethodId){
+function showSummary(){
+    const { summaryFrom, summaryTo, place, paymentMethodId } = summaryCondition; 
     //支払方法マスタ
     let optionsPaymentMethod = createOptions(paymentMethodList,paymentMethodId,"paymentMethodId","name");
   document.getElementById("app").innerHTML = `
@@ -248,7 +260,7 @@ function showSummary(summaryFrom,summaryTo,place,paymentMethodId){
                 </div>
             </div>
 
-            <button onclick="summaryExcecute(summaryFrom,summaryTo,place,paymentMethod)" class="btn btn_submit" style="margin: 20px auto;">集計</button>
+            <button onclick="summaryExcecute()" class="btn btn_submit" style="margin: 20px auto;">集計</button>
         </div>
 
         <hr class="separator">
@@ -258,22 +270,32 @@ function showSummary(summaryFrom,summaryTo,place,paymentMethodId){
 
 }
 
-function summaryExcecute(summaryFrom,summaryTo,place,paymentMethodId){
-    summaryFrom = document.getElementById("summary_from").value;
-    summaryTo = document.getElementById("summary_to").value;
-    place = document.getElementById("place").value;
-    paymentMethodId = document.getElementById("payment_method").value;
+function summaryExcecute(){
+    let summaryFrom = document.getElementById("summary_from").value;
+    let summaryTo = document.getElementById("summary_to").value;
+    let place = document.getElementById("place").value;
+    let paymentMethodId = document.getElementById("payment_method").value;
 
     if(!summaryFrom || !summaryTo){
         errorMessage = "必須項目が未入力です"
         showError(errorMessage)
+    }else if(summaryFrom > summaryTo){
+        errorMessage = "終了日は開始日以降の日付を選んでください"
+        showError(errorMessage)
     }else{
-        summaryResultShow(summaryFrom,summaryTo,place,paymentMethodId)
+        summaryCondition = {
+            summaryFrom,
+            summaryTo,
+            place,
+            paymentMethodId
+        };
+        summaryResultShow();
     }
 }
 
 //支出集計
-function summaryResultShow(summaryFrom,summaryTo,place,paymentMethodId){
+function summaryResultShow(){
+    const { summaryFrom, summaryTo, place, paymentMethodId } = summaryCondition; 
   document.getElementById("result").innerHTML = `
         <div class="result_section">
             <h2 class="label_text" style="margin-bottom: 20px;">集計結果</h2>
@@ -302,16 +324,15 @@ function summaryResultShow(summaryFrom,summaryTo,place,paymentMethodId){
                 <span class="total_amount">48,700 <small>円</small></span>
             </div>
         </div>
-    </div>
     `
-    console.log(summaryFrom,summaryTo,place,paymentMethodId)
 }
 
 
 //支出一覧ページ
-function showList(summaryFrom,summaryTo,place,paymentMethodId){
-let optionsPaymentMethod = createOptions(paymentMethodList,paymentMethodId,"paymentMethodId","name");
-  document.getElementById("app").innerHTML = `
+function showList(){
+    let { summaryFrom, summaryTo, place, paymentMethodId } = listCondition;
+    let optionsPaymentMethod = createOptions(paymentMethodList,paymentMethodId,"paymentMethodId","name");
+    document.getElementById("app").innerHTML = `
     <div class="container">
     <button onclick="showHome()" class="top_back btn btn_back">戻る</button>
 
@@ -337,7 +358,7 @@ let optionsPaymentMethod = createOptions(paymentMethodList,paymentMethodId,"paym
             <div class="label_row"><span class="label_text">場所</span></div>
             <input id = "place" type="text" class="input_field" placeholder="例：スーパー" value = "${place || ""}">
         </div>
-        <div id = "payment_method" class="input_group flex_1">
+        <div class="input_group flex_1">
             <div class="label_row"><span class="label_text">支払方法</span></div>
             <select id = "payment_method" class="input_field">
             <option value="">すべて</option>
@@ -346,7 +367,7 @@ let optionsPaymentMethod = createOptions(paymentMethodList,paymentMethodId,"paym
         </div>
         </div>
 
-        <button onclick = "listExcecute(summaryFrom,summaryTo,place,paymentMethodId)" class="btn btn_submit" style="margin: 20px auto;">検索</button>
+        <button onclick = "listExcecute()" class="btn btn_submit" style="margin: 20px auto;">検索</button>
     </div>
 
     <hr class="separator">
@@ -356,17 +377,27 @@ let optionsPaymentMethod = createOptions(paymentMethodList,paymentMethodId,"paym
     `
 }
 
-function listExcecute(summaryFrom,summaryTo,place,paymentMethodId){
-    summaryFrom = document.getElementById("summary_from").value;
-    summaryTo = document.getElementById("summary_to").value;
-    place = document.getElementById("place").value;
-    paymentMethodId = document.getElementById("payment_method").value;
+function listExcecute(){
+    let summaryFrom = document.getElementById("summary_from").value;
+    let summaryTo = document.getElementById("summary_to").value;
+    let place = document.getElementById("place").value;
+    let paymentMethodId = document.getElementById("payment_method").value;
 
     if(!summaryFrom || !summaryTo){
         errorMessage = "必須項目が未入力です"
         showError(errorMessage)
-    }else{
-        listResultShow(summaryFrom,summaryTo,place,paymentMethodId)
+    }else if(summaryFrom > summaryTo){
+        errorMessage = "終了日は開始日以降の日付を選んでください"
+        showError(errorMessage)
+    }
+    else{
+        listCondition = {
+            summaryFrom,
+            summaryTo,
+            place,
+            paymentMethodId
+        };
+        listResultShow()
     }
 }
 
