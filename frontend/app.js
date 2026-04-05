@@ -221,6 +221,7 @@ function showSummary(){
     const { summaryFrom, summaryTo, place, paymentMethodId } = summaryCondition; 
     //支払方法マスタ
     let optionsPaymentMethod = createOptions(paymentMethodList,paymentMethodId,"paymentMethodId","name");
+    
   document.getElementById("app").innerHTML = `
     <div class="container">
         <button onclick="showHome()" class="top_back btn btn_back">戻る</button>
@@ -295,36 +296,47 @@ function summaryExcecute(){
 
 //支出集計
 function summaryResultShow(){
-    const { summaryFrom, summaryTo, place, paymentMethodId } = summaryCondition; 
-  document.getElementById("result").innerHTML = `
-        <div class="result_section">
-            <h2 class="label_text" style="margin-bottom: 20px;">集計結果</h2>
-            
-            <div class="result_grid">
-                <div class="result_item">
-                    <span class="category_name">食費</span>
-                    <span class="category_amount">25,000 <small>円</small></span>
-                </div>
-                <div class="result_item">
-                    <span class="category_name">日用品</span>
-                    <span class="category_amount">8,200 <small>円</small></span>
-                </div>
-                <div class="result_item">
-                    <span class="category_name">交際費</span>
-                    <span class="category_amount">12,000 <small>円</small></span>
-                </div>
-                <div class="result_item">
-                    <span class="category_name">その他</span>
-                    <span class="category_amount">3,500 <small>円</small></span>
-                </div>
-            </div>
+  const { summaryFrom, summaryTo, place, paymentMethodId } = summaryCondition;
 
-            <div class="total_row">
-                <span class="total_label">総合計</span>
-                <span class="total_amount">48,700 <small>円</small></span>
-            </div>
-        </div>
-    `
+  const filtered = expensesList.filter(exp => {
+    return (
+      exp.date >= summaryFrom &&
+      exp.date <= summaryTo &&
+      (!place || exp.place.includes(place)) &&
+      (!paymentMethodId || exp.paymentMethodId == paymentMethodId)
+    );
+  });
+
+  const categoryTotals = {};
+
+  filtered.forEach(exp => {
+    const item = itemsList.find(m => m.itemId == exp.itemId);
+    const name = item ? item.name : "不明";
+
+    if(!categoryTotals[name]){
+      categoryTotals[name] = 0;
+    }
+
+    categoryTotals[name] += Number(exp.amount);
+  });
+
+  const total = filtered.reduce((sum, exp) => sum + Number(exp.amount), 0);
+
+  let categoryHtml = "";
+
+  for(const key in categoryTotals){
+    categoryHtml += `
+      <div class="result_item">
+        <span>${key}</span>
+        <span>${categoryTotals[key]}円</span>
+      </div>
+    `;
+  }
+
+  document.getElementById("result").innerHTML = `
+    ${categoryHtml}
+    <div>合計：${total}円</div>
+  `;
 }
 
 
@@ -403,9 +415,22 @@ function listExcecute(){
 
 //一覧結果表示
 function listResultShow(){
+
+const { summaryFrom, summaryTo, place, paymentMethodId } = listCondition;
+
+  // 🔥 絞り込み
+  const filtered = expensesList.filter(exp => {
+    return (
+      exp.date >= summaryFrom &&
+      exp.date <= summaryTo &&
+      (!place || exp.place.includes(place)) &&
+      (!paymentMethodId || exp.paymentMethodId == paymentMethodId)
+    );
+  });
+
   let rows = "";
   
-  expensesList.forEach(exp => {
+  filtered.forEach(exp => {
     let item = itemsList.find(m => m.itemId == exp.itemId);
     rows += `
       <div class="list_row">
