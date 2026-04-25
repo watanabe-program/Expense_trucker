@@ -1,5 +1,12 @@
 使用ライブラリ
 ・pywebview
+・fastapi
+・uvicorn
+・sqlAlchemy
+
+
+database.pyがsqliteがある場所でDBの接続や設定はここで行う
+models.pyはテーブルの構造を置く場所
 
 命名規則
 cssのクラス名やIDは_でPythonも_で、JavaScriptは大文字を使う

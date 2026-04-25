@@ -52,6 +52,13 @@ let paymentMethodList = [
   { paymentMethodId: 4, name: "その他" }
 ];
 
+async function loadExpenses(){
+  const res = await fetch("http://127.0.0.1:8000/expenses");
+  const data = await res.json();
+
+  console.log(data);
+}
+
 
 //TOPページ
 function showHome(){
