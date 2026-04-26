@@ -19,26 +19,6 @@ let listCondition = {
 };
 const today = new Date();
 
-
-let expensesList = [
-  {
-    id: 1,
-    date: "2025-02-02",
-    itemId: 1,
-    amount: 5000,
-    paymentMethodId: 1,
-    place: "スーパー"
-  },
-  {
-    id: 2,
-    date: "2025-02-02",
-    itemId: 3,
-    amount: 1200,
-    paymentMethodId: 2,
-    place: "ドラッグストア"
-  }
-];
-
 let itemsList = [
   { itemId: 1, name: "食費" },
   { itemId: 2, name: "水光熱費" },
@@ -52,11 +32,16 @@ let paymentMethodList = [
   { paymentMethodId: 4, name: "その他" }
 ];
 
-async function loadExpenses(){
-  const res = await fetch("http://127.0.0.1:8000/expenses");
-  const data = await res.json();
+async function fetchExpenses(){
+    try{
+        const res = await fetch("http://127.0.0.1:8000/expenses");
+        const data = await res.json();
+        return data;
+    }catch(error){
+        console.error('支出一覧を取得できませんでした',error);
+        return [];
+    }
 
-  console.log(data);
 }
 
 
@@ -216,9 +201,27 @@ function showInputConfirm(itemId,paidAt,amount,paymentMethodId,place){
     `
 }
 
-function insertExpense(itemId,paidAt,amount,paymentMethodId,place){
-    console.log(itemId,paidAt,amount,paymentMethodId,place)
-    showInput()
+async function insertExpense(itemId,paidAt,amount,paymentMethodId,place){
+    const data = {
+        date: paidAt,
+        itemId: Number(itemId),
+        amount: Number(amount),
+        paymentMethodId: Number(paymentMethodId),
+        place: place
+    }
+    try{
+        const res = await fetch("http://127.0.0.1:8000/expenses",{
+            method : "POST",
+            headers : {"Content-Type":"application/json"
+            },
+            body: JSON.stringify(data)
+        } )
+        const result = await res.json
+        console.log(result)
+        showInput()
+    }catch(error){
+        console.error("登録失敗:",error)
+    }
     
 }
 
@@ -302,8 +305,11 @@ function summaryExcecute(){
 }
 
 //支出集計
-function summaryResultShow(){
+async function summaryResultShow(){
   const { summaryFrom, summaryTo, place, paymentMethodId } = summaryCondition;
+
+    const res = await fetch("http://127.0.0.1:8000/expenses");
+    const expensesList = await res.json();
 
   const filtered = expensesList.filter(exp => {
     return (
@@ -421,11 +427,13 @@ function listExcecute(){
 }
 
 //一覧結果表示
-function listResultShow(){
+async function listResultShow(){
 
-const { summaryFrom, summaryTo, place, paymentMethodId } = listCondition;
+    const { summaryFrom, summaryTo, place, paymentMethodId } = listCondition;
+    const res = await fetch("http://127.0.0.1:8000/expenses");
+    const expensesList = await res.json();
 
-  // 🔥 絞り込み
+  // 絞り込み
   const filtered = expensesList.filter(exp => {
     return (
       exp.date >= summaryFrom &&

@@ -1,11 +1,13 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
 from database import SessionLocal
 from models import Expense
+from schemas import ExpenceCreate
+from database import engine,Base
 
 app = FastAPI()
 
+#世界中のどこからでもAPIを叩けるようにする設定
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -13,12 +15,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-class ExpenceCreate(BaseModel):
-    date : str
-    itemId : int
-    amount : int
-    paymentMethodId : int
-    place : str
+Base.metadata.create_all(bind=engine)
 
 #一覧を表示(Select)
 @app.get("/expenses")
@@ -28,7 +25,7 @@ def get_expenses():
         expenses = db.query(Expense).all()
         return [
             {
-                "id": e.expence_id,
+                "id": e.expense_id,
                 "date" : e.date,
                 "itemId" : e.item_id,
                 "amount" :e.amount,
@@ -55,8 +52,6 @@ def create_expenses(expense:ExpenceCreate):
 
         db.add(new_exp)
         db.commit()
-        return {'message' : 'ok','id' : new_exp.expence_id}
+        return {'message' : 'ok','id' : new_exp.expense_id}
     finally:
         db.close()
-
-   

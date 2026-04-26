@@ -1,4 +1,8 @@
 Pythonのバージョン: Python 3.13.3
+powershellでセキュリティエラーが出た場合
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+
+python -m uvicorn main:app --reload
 
 仮想化
 python -m venv venv プロジェクトフォルダで実行して仮想化作成
