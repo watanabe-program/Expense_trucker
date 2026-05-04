@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from database import SessionLocal
-from models import Expense
+from models import Expense,Items,Users,PaymentMethods,Logs
 from schemas import ExpenceCreate
 from database import engine,Base
 from datetime import datetime
@@ -18,6 +18,62 @@ app.add_middleware(
 )
 
 Base.metadata.create_all(bind=engine)
+
+#マスタデータを入れる
+db = SessionLocal()
+
+user1 = Users(user_id = 1, user_name = '母',password= 'test')
+user2 = Users(user_id = 2, user_name = '自分',password= 'test')
+if db.query(Users).count() == 0:
+    db.add_all([user1,user2])
+
+item1 = Items(item_id = 1, item_name = '食費')
+item2 = Items(item_id = 2, item_name = '水道代・光熱費')
+item3 = Items(item_id = 3, item_name = 'その他')
+
+if db.query(Items).count() == 0:
+    db.add_all([item1,item2,item3])
+
+payment_method1 = PaymentMethods(payment_method_id = 1, payment_method_name = '現金')
+payment_method2 = PaymentMethods(payment_method_id = 2, payment_method_name = 'クレジットカード')
+payment_method3 = PaymentMethods(payment_method_id = 3, payment_method_name = 'コード決済')
+payment_method4 = PaymentMethods(payment_method_id = 4, payment_method_name = 'その他')
+if db.query(PaymentMethods).count() == 0:
+    db.add_all([payment_method1,payment_method2,payment_method3,payment_method4])
+
+db.commit()
+db.close()
+
+#マスタデータ取得
+@app.get("/items")
+def get_items():
+    db = SessionLocal()
+    try:
+        items = db.query(Items).all()
+        return [
+            {
+                "itemId":i.item_id,
+                "name":i.item_name
+            }
+            for i in items
+        ]
+    finally:
+        db.close()
+
+@app.get("/paymentMethods")
+def get_payment_methods():
+    db = SessionLocal()
+    try:
+        payment_methods = db.query(PaymentMethods).all()
+        return [
+            {
+                "paymentMethodId":p.payment_method_id,
+                "name":p.payment_method_name
+            }
+            for p in payment_methods
+        ]
+    finally:
+        db.close()
 
 #一覧を表示(Select)
 @app.get("/expenses")

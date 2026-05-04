@@ -22,18 +22,34 @@ let listCondition = {
 };
 const today = new Date();
 
-let itemsList = [
-  { itemId: 1, name: "食費" },
-  { itemId: 2, name: "水光熱費" },
-  { itemId: 3, name: "その他" }
-];
+let itemsList = [];
 
-let paymentMethodList = [
-  { paymentMethodId: 1, name: "現金" },
-  { paymentMethodId: 2, name: "クレジットカード" },
-  { paymentMethodId: 3, name: "コード決済" },
-  { paymentMethodId: 4, name: "その他" }
-];
+let paymentMethodList = [];
+
+
+async function loadItems(){
+    try{
+        const res = await fetch("http://127.0.0.1:8000/items")
+        const data = await res.json()
+
+        itemsList = data
+        console.log(itemsList)
+    }catch(error){
+        console.error("items取得失敗:",error)
+    }
+}
+
+async function loadPaymentMethods(){
+    try{
+        const res = await fetch("http://127.0.0.1:8000/paymentMethods")
+        const data = await res.json()
+
+        paymentMethodList = data
+        console.log(paymentMethodList)
+    }catch(error){
+        console.error("paymentMethods取得失敗:",error)
+    }
+}
 
 async function fetchExpenses(){
     try{
@@ -64,13 +80,13 @@ function showHome(){
     <h1 class="expencetracker">Expense Tracker</h1>
 
     <nav class="menu">
-        <button onclick= "showInput(itemId,paidAt,amount,paymentMethodId,place)" class="menu_button">
+        <button onclick= "initInput(itemId,paidAt,amount,paymentMethodId,place)" class="menu_button">
             <span class="button_text">支出入力</span>
         </button>
-        <button onclick= "showSummary()" class="menu_button">
+        <button onclick= "initSummary()" class="menu_button">
             <span class="button_text">支出集計</span>
         </button>
-        <button onclick= "showList()" class="menu_button">
+        <button onclick= "initList()" class="menu_button">
             <span class="button_text">支出一覧</span>
         </button>
     </nav>
@@ -78,8 +94,30 @@ function showHome(){
     `
 }
 
+//マスタデータ挿入
+async function initInput(itemId,paidAt,amount,paymentMethodId,place){
+    await loadItems()
+    await loadPaymentMethods()
+    showInput(itemId,paidAt,amount,paymentMethodId,place)
+}
+
+async function initSummary(){
+    await loadItems()
+    await loadPaymentMethods()
+    showSummary()
+}
+
+async function initList(){
+    await loadItems()
+    await loadPaymentMethods()
+    showList()
+}
+
+
 //支出入力ページ
 function showInput(itemId,paidAt,amount,paymentMethodId,place){
+
+
     //支出マスタ
     let optionsItem = createOptions(itemsList, itemId, "itemId", "name");
     //支払方法マスタ
