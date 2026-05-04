@@ -5,6 +5,9 @@ let paidAt = ""
 let amount = ""
 let paymentMethodId = ""
 let place = ""
+let userId = 1
+let currentEditId = null;
+let expensesList = []; 
 let summaryCondition = {
   summaryFrom: "",
   summaryTo: "",
@@ -203,11 +206,12 @@ function showInputConfirm(itemId,paidAt,amount,paymentMethodId,place){
 
 async function insertExpense(itemId,paidAt,amount,paymentMethodId,place){
     const data = {
-        date: paidAt,
+        paidAt: paidAt,
         itemId: Number(itemId),
         amount: Number(amount),
         paymentMethodId: Number(paymentMethodId),
-        place: place
+        place: place,
+        userId: userId
     }
     try{
         const res = await fetch("http://127.0.0.1:8000/expenses",{
@@ -216,7 +220,7 @@ async function insertExpense(itemId,paidAt,amount,paymentMethodId,place){
             },
             body: JSON.stringify(data)
         } )
-        const result = await res.json
+        const result = await res.json()
         console.log(result)
         showInput()
     }catch(error){
@@ -313,8 +317,8 @@ async function summaryResultShow(){
 
   const filtered = expensesList.filter(exp => {
     return (
-      exp.date >= summaryFrom &&
-      exp.date <= summaryTo &&
+      exp.paidAt >= summaryFrom &&
+      exp.paidAt <= summaryTo &&
       (!place || exp.place.includes(place)) &&
       (!paymentMethodId || exp.paymentMethodId == paymentMethodId)
     );
@@ -351,7 +355,6 @@ async function summaryResultShow(){
     <div>合計：${total}円</div>
   `;
 }
-
 
 //支出一覧ページ
 function showList(){
@@ -431,17 +434,19 @@ async function listResultShow(){
 
     const { summaryFrom, summaryTo, place, paymentMethodId } = listCondition;
     const res = await fetch("http://127.0.0.1:8000/expenses");
-    const expensesList = await res.json();
+    expensesList = await res.json();
 
   // 絞り込み
   const filtered = expensesList.filter(exp => {
     return (
-      exp.date >= summaryFrom &&
-      exp.date <= summaryTo &&
+      exp.paidAt >= summaryFrom &&
+      exp.paidAt <= summaryTo &&
       (!place || exp.place.includes(place)) &&
       (!paymentMethodId || exp.paymentMethodId == paymentMethodId)
     );
   });
+        console.log(expensesList);
+        console.log(filtered);
 
   let rows = "";
   
@@ -449,7 +454,7 @@ async function listResultShow(){
     let item = itemsList.find(m => m.itemId == exp.itemId);
     rows += `
       <div class="list_row">
-        <div class="col_date">${exp.date}</div>
+        <div class="col_date">${exp.paidAt}</div>
         <div class="col_category">${item ? item.name : ""}</div>
         <div class="col_amount">${exp.amount}<small>円</small></div>
         <div class="col_action">
@@ -478,19 +483,24 @@ async function listResultShow(){
 }
 
 function goEdit(id){
-  const data = expensesList.find(e => e.id === id);
-
+    currentEditId = id;
+    const exp = expensesList.find(e => e.id == id);
+    console.log(exp)
+    console.log(expensesList)
+    console.log(typeof id)
+    console.log(typeof expensesList[0].id)
     showEdit(
-    data.itemId,
-    data.date,
-    data.amount,
-    data.paymentMethodId,
-    data.place
-  );
+        currentEditId,
+        exp.itemId,
+        exp.paidAt,
+        exp.amount,
+        exp.paymentMethodId,
+        exp.place
+    );
 }
 
 //支出編集ページ
-function showEdit(itemId,paidAt,amount,paymentMethodId,place){
+function showEdit(currentEditId,itemId,paidAt,amount,paymentMethodId,place){
     //支出マスタ
     let optionsItem = createOptions(itemsList, itemId, "itemId", "name");
     //支払方法マスタ
@@ -547,8 +557,8 @@ function showEdit(itemId,paidAt,amount,paymentMethodId,place){
                     <input id = "place" type="text" class="input_field" placeholder="例：スーパー" value = "${place || ''}">
                 </div>
                 <div class="button_group_edit">
-                    <button onclick="showDeleteConfirm()" class="input_submit btn btn_delete">削除</button>
-                    <button onclick="showInputConfirm()" class="input_submit btn btn_submit">登録</button>
+                    <button onclick="showDeleteConfirm(${currentEditId})" class="input_submit btn btn_delete">削除</button>
+                    <button onclick="goEditExpensePage(${currentEditId})" class="input_submit btn btn_submit">登録</button>
                 </div>
             </div>
         </div>
@@ -556,8 +566,97 @@ function showEdit(itemId,paidAt,amount,paymentMethodId,place){
     `
 }
 
+//編集ページから編集確認ページへ
+function goEditExpensePage(currentEditId){
+    itemId = document.getElementById("item").value;
+    paidAt = document.getElementById("paid_at").value;
+    amount = document.getElementById("amount").value;
+    paymentMethodId = document.getElementById("payment_method").value;
+    place = document.getElementById("place").value;
+    console.log(itemId,paidAt,amount,paymentMethodId, place)
+    if (!itemId || !paidAt || !amount) { 
+        errorMessage = "必須項目が未入力です"
+        showError(errorMessage)
+    } else {
+        showEditConfirm(currentEditId,itemId,paidAt,amount,paymentMethodId,place)
+    }
+    
+}
+
+//編集確認ページ
+function showEditConfirm(currentEditId,itemId,paidAt,amount,paymentMethodId,place){
+    let foundItem = itemsList.find(m => String(m.itemId) === String(itemId));
+    let item = foundItem ? foundItem.name : "";
+    let foundPaymentMethod = paymentMethodList.find(m2 => String(m2.paymentMethodId) === String(paymentMethodId));
+    let paymentMethod = foundPaymentMethod ? foundPaymentMethod.name : "";
+    
+
+  document.getElementById("app").innerHTML = `
+    <div class="container_confirm">
+        <div class="confirm_box">
+            <div class="header">
+                <p class="confirm_title">以下の内容で登録してよろしいですか？</p>
+            </div>
+            <div class="confirm_item">
+                <span class="item_label">費用名</span>
+                <span class="item_value">${item}</span>
+            </div>
+            <div class="confirm_item">
+                <span class="item_label">支払日時</span>
+                <span class="item_value">${paidAt}</span>
+            </div>
+            <div class="confirm_item">
+                <span class="item_label">金額</span>
+                <span class="item_value">${amount}</span>
+                <span class="currency">円</span>
+            </div>
+            <div class="confirm_item">
+                <span class="item_label">支払方法</span>
+                <span class="item_value">${paymentMethod || "（未入力）"}</span>
+            </div>
+            <div class="confirm_item">
+                <span class="item_label">場所</span>
+                <span class="item_value">${place || "（未入力）"}</span>
+            </div>
+            <div class="button_group">
+                <button onclick="showEdit(${currentEditId},itemId,paidAt,amount,paymentMethodId,place)" class="btn btn_back">戻る</button>
+                <button onclick="updateExpense(${currentEditId},itemId,paidAt,amount,paymentMethodId,place)" class="btn btn_submit">登録</button>
+            </div>
+        </div>
+    </div>
+    `
+}
+
+async function updateExpense(id, itemId, paidAt, amount, paymentMethodId, place){
+    const data = {
+        paidAt: paidAt,
+        itemId: Number(itemId),
+        amount: Number(amount),
+        paymentMethodId: Number(paymentMethodId),
+        place: place,
+        userId:userId
+    }
+
+    try{
+        const res = await fetch(`http://127.0.0.1:8000/expenses/${id}`,{
+            method : "PATCH",
+            headers : {
+                "Content-Type":"application/json"
+            },
+            body: JSON.stringify(data)
+        })
+
+        const result = await res.json()
+        console.log(result)
+        showList()
+
+    }catch(error){
+        console.error("更新失敗:",error)
+    }
+}
+
 //削除確認ページ
-function showDeleteConfirm(){
+function showDeleteConfirm(currentEditId){
   document.getElementById("dialog").innerHTML = `
     <div class="overlay">
         <div class="confirm_card">
@@ -573,9 +672,27 @@ function showDeleteConfirm(){
     let deleteButton = document.getElementById('delete_button');
 
     deleteButton.addEventListener('click', function(){
+        deleteExpense(currentEditId);
         closeDialog();
         showList();
     });
+}
+
+async function deleteExpense(id){
+    const data = {}
+
+    try{
+        const res = await fetch(`http://127.0.0.1:8000/expenses/delete/${id}`,{
+            method : "PATCH",
+        })
+
+        const result = await res.json()
+        console.log(result)
+        showList()
+
+    }catch(error){
+        console.error("削除失敗:",error)
+    }
 }
 
 function closeDialog(){

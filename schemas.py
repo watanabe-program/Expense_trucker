@@ -1,7 +1,10 @@
 from pydantic import BaseModel
 class ExpenceCreate(BaseModel):
-    date : str
-    itemId : int
-    amount : int
-    paymentMethodId : int
+    paidAt : str
     place : str
+    amount : int
+    itemId : int
+    paymentMethodId : int
+    userId : int
+    isDeleted : int = 0
+

@@ -7,3 +7,4 @@ DATABASE_URL = "sqlite:///./expenses.db" #sqliteのdbでexpenses.dbというフ�
 engine = create_engine(DATABASE_URL,echo=True) #engineはsqliteとpythonの中継役
 SessionLocal = sessionmaker(bind=engine) #DB操作するためのインスタンスを作成
 Base = declarative_base() #sqlAlchemyにこれがdbと知らせるためのもの
+
