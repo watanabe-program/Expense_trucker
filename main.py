@@ -1,10 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from database import SessionLocal
-from models import Expense,Items,Users,PaymentMethods,Logs
+from expenses_db import ExpensesSessionLocal,expenses_engine,ExpensesBase
+from master_db import MasterSessionLocal,master_engine,MasterBase
+from models import Expense,Items,Users,PaymentMethods
 from schemas import ExpenceCreate,LoginData
-from database import engine,Base
 from datetime import datetime
+from log import create_log
 
 app = FastAPI()
 today = datetime.now().strftime('%Y$m%d')
@@ -17,10 +18,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-Base.metadata.create_all(bind=engine)
+ExpensesBase.metadata.create_all(bind=expenses_engine)
+MasterBase.metadata.create_all(bind=master_engine)
 
 #マスタデータを入れる
-db = SessionLocal()
+db = MasterSessionLocal()
 
 user1 = Users(user_id = 1, user_name = 'noriko',password= 'test')
 user2 = Users(user_id = 2, user_name = 'Tsuyoshi',password= 'test')
@@ -44,11 +46,11 @@ if db.query(PaymentMethods).count() == 0:
 db.commit()
 db.close()
 
-
+logger = create_log()
 #ログイン認証
 @app.post("/login")
 def login(data:LoginData):
-    db = SessionLocal()
+    db = MasterSessionLocal()
 
     user = db.query(Users).filter(
         Users.user_id == data.userId,
@@ -56,6 +58,8 @@ def login(data:LoginData):
     ).first()
 
     if user:
+        user_name = user.user_name 
+        logger.info(f'{user_name}さんがログインしました')
         return {"result":"ok"}
     
     return {'result':"ng"}
@@ -63,7 +67,7 @@ def login(data:LoginData):
 #マスタデータ取得
 @app.get("/items")
 def get_items():
-    db = SessionLocal()
+    db = MasterSessionLocal()
     try:
         items = db.query(Items).all()
         return [
@@ -73,12 +77,13 @@ def get_items():
             }
             for i in items
         ]
+        
     finally:
         db.close()
 
 @app.get("/paymentMethods")
 def get_payment_methods():
-    db = SessionLocal()
+    db = MasterSessionLocal()
     try:
         payment_methods = db.query(PaymentMethods).all()
         return [
@@ -93,7 +98,7 @@ def get_payment_methods():
 
 @app.get("/users")
 def get_users():
-    db = SessionLocal()
+    db = MasterSessionLocal()
     try:
         users = db.query(Users).all()
         return [
@@ -110,9 +115,10 @@ def get_users():
 #一覧を表示(Select)
 @app.get("/expenses/{user_id}")
 def get_expenses(user_id:int):
-    db = SessionLocal()
+    db = ExpensesSessionLocal()
     try:
         expenses = db.query(Expense).filter(Expense.user_id == user_id,Expense.is_deleted == 0).all()
+        logger.info('支出一覧を表示しました')
         return [
             {
                 "id": e.expense_id,
@@ -132,7 +138,7 @@ def get_expenses(user_id:int):
 #登録(Insert)
 @app.post("/expenses")
 def create_expenses(expense:ExpenceCreate):
-    db = SessionLocal()
+    db = ExpensesSessionLocal()
     try:
         new_exp = Expense(
             paid_at=expense.paidAt,
@@ -144,8 +150,11 @@ def create_expenses(expense:ExpenceCreate):
             user_id = expense.userId
         )
 
+
+
         db.add(new_exp)
         db.commit()
+        logger.info(f'{expense.itemId}を追加しました{expense.paidAt}、{expense.amount}円')
         return {'message' : 'ok','id' : new_exp.expense_id}
     finally:
         db.close()
@@ -153,7 +162,7 @@ def create_expenses(expense:ExpenceCreate):
 #支出編集
 @app.patch("/expenses/{expense_id}")
 def update_expenses(expense_id:int ,expense:ExpenceCreate):
-    db = SessionLocal()
+    db = ExpensesSessionLocal()
     try:
         db_expense = db.query(Expense).filter(Expense.expense_id == expense_id).first()
 
@@ -168,6 +177,7 @@ def update_expenses(expense_id:int ,expense:ExpenceCreate):
         db_expense.note = expense.note
         db_expense.updated_at = today
         db.commit()
+        logger.info(f'{expense.itemId}を編集しました{expense.paidAt}、{expense.amount}円')
         return {'message' : 'updated'}
     finally:
         db.close()
@@ -175,15 +185,15 @@ def update_expenses(expense_id:int ,expense:ExpenceCreate):
 #支出削除
 @app.patch("/expenses/delete/{expense_id}")
 def delete_expenses(expense_id:int ):
-    db = SessionLocal()
+    db = ExpensesSessionLocal()
     try:
         db_expense = db.query(Expense).filter(Expense.expense_id == expense_id).first()
 
         if not db_expense:
             return {"error": "not found"}
-        
         db_expense.is_deleted = 1
         db.commit()
+        logger.info(f'{Expense.expense_id}を削除しました')
         return {'message' : 'updated'}
     finally:
         db.close()

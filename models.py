@@ -1,10 +1,11 @@
 from sqlalchemy import Column, Integer,String
-from database import Base
+from expenses_db import ExpensesBase
+from master_db import MasterBase
 from datetime import datetime
 today = datetime.now().strftime('%Y%m%d')
 
 #支出テーブル
-class Expense(Base):
+class Expense(ExpensesBase):
     __tablename__ = "expenses" #テーブル名
 
     #各カラム
@@ -21,7 +22,7 @@ class Expense(Base):
     is_deleted = Column(Integer,default=0)
 
 #ユーザーマスタ
-class Users(Base):
+class Users(MasterBase):
     __tablename__ = "users" #テーブル名
     #各カラム
     user_id = Column(Integer,primary_key=True)
@@ -29,7 +30,7 @@ class Users(Base):
     password = Column(String)
     
 #支出種類マスタ
-class Items(Base):
+class Items(MasterBase):
     __tablename__ = "items" #テーブル名
 
     #各カラム
@@ -37,21 +38,9 @@ class Items(Base):
     item_name = Column(String)
 
 #支払方法マスタ
-class PaymentMethods(Base):
+class PaymentMethods(MasterBase):
     __tablename__ = "payment_methods" #テーブル名
 
     #各カラム
     payment_method_id = Column(Integer,primary_key=True)#primary_keyをtrueにするだけで自動採番になる
     payment_method_name = Column(String)
-
-#履歴テーブル
-class Logs(Base):
-    __tablename__ = "logs" #テーブル名
-
-    #各カラム
-    _log_id = Column(Integer,primary_key=True)#primary_keyをtrueにするだけで自動採番になる
-    function_id = Column(String)
-    function_name = Column(String)
-    error_logs = Column(String)
-    user_id = Column(Integer)
-    created_at = Column(String,default=today)
