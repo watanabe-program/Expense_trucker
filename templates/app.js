@@ -5,7 +5,8 @@ let paidAt = ""
 let amount = ""
 let paymentMethodId = ""
 let place = ""
-let userId = 1
+let note = ""
+let userId = ""
 let currentEditId = null;
 let expensesList = []; 
 let summaryCondition = {
@@ -22,10 +23,18 @@ let listCondition = {
 };
 const today = new Date();
 
+window.onload = async function() {
+    // 1. まずユーザーデータを読み込む（awaitで完了を待つ）
+    await loadUsers();
+    // 2. データが入った状態でログイン画面を表示
+    showLogin();
+};
+
 let itemsList = [];
 
 let paymentMethodList = [];
 
+let userList = [];
 
 async function loadItems(){
     try{
@@ -51,6 +60,18 @@ async function loadPaymentMethods(){
     }
 }
 
+async function loadUsers(){
+    try{
+        const res = await fetch("http://127.0.0.1:8000/users")
+        const data = await res.json()
+
+        userList = data
+        console.log(userList)
+    }catch(error){
+        console.error("users取得失敗:",error)
+    }
+}
+
 async function fetchExpenses(){
     try{
         const res = await fetch("http://127.0.0.1:8000/expenses");
@@ -64,8 +85,73 @@ async function fetchExpenses(){
 }
 
 
+//ログインページ
+function showLogin(){
+
+    let optionsUser = createOptions(userList, userId, "userId", "userName");
+  document.getElementById("app").innerHTML = `
+    <div class="login_page">
+    <h1 class="expencetracker">Expense Tracker</h1>
+
+        <div class="login_card">
+            <div class="form_area_login">
+                <div class="input_group_login">
+                    <div class="label_row">
+                        <span class="label_text_login">ユーザー名</span>
+                    </div>
+                    <select id="user" class="input_field_login">
+                    <option value="">選択してください</option>
+                    ${optionsUser}
+                    </select>
+                </div>
+                <div class="input_group_login">
+                    <div class="label_row">
+                        <span class="label_text_login">パスワード</span>
+                    </div>
+                    <input id = "password" type="text" class="input_field_login">
+                </div>
+            </div>
+            <button onclick="loginTry()" class="input_submit_login btn btn_submit">ログイン</button>
+        </div>
+    </div>
+    `
+}
+
+async function loginTry(){
+
+    try{
+        userId = document.getElementById("user").value;
+        password = document.getElementById("password").value;
+
+        const res = await fetch("http://127.0.0.1:8000/login",{
+            method: "POST",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body:JSON.stringify({
+                userId:userId,
+                password:password
+            })
+        })
+
+        const data = await res.json()
+        console.log(data)
+
+        //re.okはhtmlが200ならすべてokになる
+        if(data.result == "ok"){
+            showHome(userId)
+        }else{
+            errorMessage = "ユーザーIDまたはパスワードが違います。"
+            showError(errorMessage)
+        }
+    }catch(error){
+        console.error("ログインエラー:",error)
+    }
+
+}
+
 //TOPページ
-function showHome(){
+function showHome(userId){
     //ホーム画面に来たらリセット
     errorMessage = ""
     itemId = ""
@@ -73,6 +159,7 @@ function showHome(){
     amount = ""
     paymentMethodId = ""
     place = "",
+    note = "",
     summaryCondition = {summaryFrom: "",summaryTo: "",place: "",paymentMethodId: ""};
     listCondition = {summaryFrom: "",summaryTo: "",place: "",paymentMethodId: ""};
   document.getElementById("app").innerHTML = `
@@ -80,13 +167,13 @@ function showHome(){
     <h1 class="expencetracker">Expense Tracker</h1>
 
     <nav class="menu">
-        <button onclick= "initInput(itemId,paidAt,amount,paymentMethodId,place)" class="menu_button">
+        <button onclick= "initInput('${itemId}','${paidAt}','${amount}','${paymentMethodId}','${place}','${note}','${userId}')" class="menu_button">
             <span class="button_text">支出入力</span>
         </button>
-        <button onclick= "initSummary()" class="menu_button">
+        <button onclick= "initSummary('${userId}')" class="menu_button">
             <span class="button_text">支出集計</span>
         </button>
-        <button onclick= "initList()" class="menu_button">
+        <button onclick= "initList('${userId}')" class="menu_button">
             <span class="button_text">支出一覧</span>
         </button>
     </nav>
@@ -95,27 +182,27 @@ function showHome(){
 }
 
 //マスタデータ挿入
-async function initInput(itemId,paidAt,amount,paymentMethodId,place){
+async function initInput(itemId,paidAt,amount,paymentMethodId,place,note,userId){
     await loadItems()
     await loadPaymentMethods()
-    showInput(itemId,paidAt,amount,paymentMethodId,place)
+    showInput(itemId,paidAt,amount,paymentMethodId,place,note,userId)
 }
 
-async function initSummary(){
+async function initSummary(userId){
     await loadItems()
     await loadPaymentMethods()
-    showSummary()
+    showSummary(userId)
 }
 
-async function initList(){
+async function initList(userId){
     await loadItems()
     await loadPaymentMethods()
-    showList()
+    showList(userId)
 }
 
 
 //支出入力ページ
-function showInput(itemId,paidAt,amount,paymentMethodId,place){
+function showInput(itemId,paidAt,amount,paymentMethodId,place,note,userId){
 
 
     //支出マスタ
@@ -127,7 +214,7 @@ function showInput(itemId,paidAt,amount,paymentMethodId,place){
   document.getElementById("app").innerHTML = `
     <div class="input">
         <div class="container">
-            <button onclick="showHome()" class="top_back btn btn_back ">戻る</button>
+            <button onclick="showHome('${userId}')" class="top_back btn btn_back ">戻る</button>
             <div class="header">
                 <h1 class="title">支出入力</h1>
             </div>
@@ -174,32 +261,39 @@ function showInput(itemId,paidAt,amount,paymentMethodId,place){
                     </div>
                     <input id = "place" type="text" class="input_field" placeholder="例：スーパー" value = "${place || ''}">
                 </div>
+                <div class="input_group">
+                    <div class="label_row">
+                        <span class="label_text">備考</span>
+                    </div>
+                    <input id = "note" type="text" class="input_field" value = "${note || ''}">
+                </div>
 
-                <button onclick="saveExpense()" class="input_submit btn btn_submit">登録</button>
+                <button onclick="saveExpense('${userId}')" class="input_submit btn btn_submit">登録</button>
             </div>
         </div>
     </div>
     `
 }
 
-function saveExpense(){
+function saveExpense(userId){
     itemId = document.getElementById("item").value;
     paidAt = document.getElementById("paid_at").value;
     amount = document.getElementById("amount").value;
     paymentMethodId = document.getElementById("payment_method").value;
     place = document.getElementById("place").value;
+    note = document.getElementById("note").value;
     console.log(itemId,paidAt,amount,paymentMethodId, place)
     if (!itemId || !paidAt || !amount) { 
         errorMessage = "必須項目が未入力です"
         showError(errorMessage)
     } else {
-        showInputConfirm(itemId,paidAt,amount,paymentMethodId,place)
+        showInputConfirm(itemId,paidAt,amount,paymentMethodId,place,note,userId)
     }
     
 }
 
 //入力確認ページ
-function showInputConfirm(itemId,paidAt,amount,paymentMethodId,place){
+function showInputConfirm(itemId,paidAt,amount,paymentMethodId,place,note,userId){
     let foundItem = itemsList.find(m => String(m.itemId) === String(itemId));
     let item = foundItem ? foundItem.name : "";
     let foundPaymentMethod = paymentMethodList.find(m2 => String(m2.paymentMethodId) === String(paymentMethodId));
@@ -233,22 +327,27 @@ function showInputConfirm(itemId,paidAt,amount,paymentMethodId,place){
                 <span class="item_label">場所</span>
                 <span class="item_value">${place || "（未入力）"}</span>
             </div>
+            <div class="confirm_item">
+                <span class="item_label">備考</span>
+                <span class="item_value">${note || "（未入力）"}</span>
+            </div>
             <div class="button_group">
-                <button onclick="showInput(itemId,paidAt,amount,paymentMethodId,place)" class="btn btn_back">戻る</button>
-                <button onclick="insertExpense(itemId,paidAt,amount,paymentMethodId,place)" class="btn btn_submit">登録</button>
+                <button onclick="showInput('${itemId}','${paidAt}','${amount}','${paymentMethodId}','${place}','${note}','${userId}')" class="btn btn_back">戻る</button>
+                <button onclick="insertExpense('${itemId}','${paidAt}','${amount}','${paymentMethodId}','${place}','${note}','${userId}')" class="btn btn_submit">登録</button>
             </div>
         </div>
     </div>
     `
 }
 
-async function insertExpense(itemId,paidAt,amount,paymentMethodId,place){
+async function insertExpense(itemId,paidAt,amount,paymentMethodId,place,note,userId){
     const data = {
         paidAt: paidAt,
         itemId: Number(itemId),
         amount: Number(amount),
         paymentMethodId: Number(paymentMethodId),
         place: place,
+        note: note,
         userId: userId
     }
     try{
@@ -260,7 +359,7 @@ async function insertExpense(itemId,paidAt,amount,paymentMethodId,place){
         } )
         const result = await res.json()
         console.log(result)
-        showInput()
+        showInput('','','','','','',userId)
     }catch(error){
         console.error("登録失敗:",error)
     }
@@ -269,14 +368,14 @@ async function insertExpense(itemId,paidAt,amount,paymentMethodId,place){
 
 
 //支出集計ページ
-function showSummary(){
+function showSummary(userId){
     const { summaryFrom, summaryTo, place, paymentMethodId } = summaryCondition; 
     //支払方法マスタ
     let optionsPaymentMethod = createOptions(paymentMethodList,paymentMethodId,"paymentMethodId","name");
     
   document.getElementById("app").innerHTML = `
     <div class="container">
-        <button onclick="showHome()" class="top_back btn btn_back">戻る</button>
+        <button onclick="showHome('${userId}')" class="top_back btn btn_back">戻る</button>
         
         <div class="header">
             <h1 class="title">支出集計</h1>
@@ -313,7 +412,7 @@ function showSummary(){
                 </div>
             </div>
 
-            <button onclick="summaryExcecute()" class="btn btn_submit" style="margin: 20px auto;">集計</button>
+            <button onclick="summaryExcecute('${userId}')" class="btn btn_submit" style="margin: 20px auto;">集計</button>
         </div>
 
         <hr class="separator">
@@ -323,7 +422,7 @@ function showSummary(){
 
 }
 
-function summaryExcecute(){
+function summaryExcecute(userId){
     let summaryFrom = document.getElementById("summary_from").value;
     let summaryTo = document.getElementById("summary_to").value;
     let place = document.getElementById("place").value;
@@ -342,18 +441,22 @@ function summaryExcecute(){
             place,
             paymentMethodId
         };
-        summaryResultShow();
+        summaryResultShow(userId);
     }
 }
 
 //支出集計
-async function summaryResultShow(){
+async function summaryResultShow(userId){
   const { summaryFrom, summaryTo, place, paymentMethodId } = summaryCondition;
 
-    const res = await fetch("http://127.0.0.1:8000/expenses");
+
+    const res = await fetch(`http://127.0.0.1:8000/expenses/${userId}`);
     const expensesList = await res.json();
+    console.log(expensesList)
 
   const filtered = expensesList.filter(exp => {
+    console.log(typeof userId, userId)
+    console.log(typeof exp.userId, exp.userId)
     return (
       exp.paidAt >= summaryFrom &&
       exp.paidAt <= summaryTo &&
@@ -395,12 +498,12 @@ async function summaryResultShow(){
 }
 
 //支出一覧ページ
-function showList(){
+function showList(userId){
     let { summaryFrom, summaryTo, place, paymentMethodId } = listCondition;
     let optionsPaymentMethod = createOptions(paymentMethodList,paymentMethodId,"paymentMethodId","name");
     document.getElementById("app").innerHTML = `
     <div class="container">
-    <button onclick="showHome()" class="top_back btn btn_back">戻る</button>
+    <button onclick="showHome('${userId}')" class="top_back btn btn_back">戻る</button>
 
     <div class="header">
         <h1 class="title">支出一覧</h1>
@@ -433,7 +536,7 @@ function showList(){
         </div>
         </div>
 
-        <button onclick = "listExcecute()" class="btn btn_submit" style="margin: 20px auto;">検索</button>
+        <button onclick = "listExcecute('${userId}')" class="btn btn_submit" style="margin: 20px auto;">検索</button>
     </div>
 
     <hr class="separator">
@@ -443,7 +546,7 @@ function showList(){
     `
 }
 
-function listExcecute(){
+function listExcecute(userId){
     let summaryFrom = document.getElementById("summary_from").value;
     let summaryTo = document.getElementById("summary_to").value;
     let place = document.getElementById("place").value;
@@ -463,15 +566,15 @@ function listExcecute(){
             place,
             paymentMethodId
         };
-        listResultShow()
+        listResultShow(userId)
     }
 }
 
 //一覧結果表示
-async function listResultShow(){
+async function listResultShow(userId){
 
     const { summaryFrom, summaryTo, place, paymentMethodId } = listCondition;
-    const res = await fetch("http://127.0.0.1:8000/expenses");
+    const res = await fetch(`http://127.0.0.1:8000/expenses/${userId}`);
     expensesList = await res.json();
 
   // 絞り込み
@@ -533,12 +636,14 @@ function goEdit(id){
         exp.paidAt,
         exp.amount,
         exp.paymentMethodId,
-        exp.place
+        exp.place,
+        exp.note,
+        userId
     );
 }
 
 //支出編集ページ
-function showEdit(currentEditId,itemId,paidAt,amount,paymentMethodId,place){
+function showEdit(currentEditId,itemId,paidAt,amount,paymentMethodId,place,note,userId){
     //支出マスタ
     let optionsItem = createOptions(itemsList, itemId, "itemId", "name");
     //支払方法マスタ
@@ -547,7 +652,7 @@ function showEdit(currentEditId,itemId,paidAt,amount,paymentMethodId,place){
   document.getElementById("app").innerHTML = `
     <div class="input">
         <div class="container">
-            <button onclick="showList()" class="top_back btn btn_back ">戻る</button>
+            <button onclick="showList('${userId}')" class="top_back btn btn_back ">戻る</button>
             <div class="header">
                 <h1 class="title">支出編集</h1>
             </div>
@@ -594,6 +699,12 @@ function showEdit(currentEditId,itemId,paidAt,amount,paymentMethodId,place){
                     </div>
                     <input id = "place" type="text" class="input_field" placeholder="例：スーパー" value = "${place || ''}">
                 </div>
+                <div class="input_group">
+                    <div class="label_row">
+                        <span class="label_text">備考</span>
+                    </div>
+                    <input id = "note" type="text" class="input_field" value = "${note || ''}">
+                </div>
                 <div class="button_group_edit">
                     <button onclick="showDeleteConfirm(${currentEditId})" class="input_submit btn btn_delete">削除</button>
                     <button onclick="goEditExpensePage(${currentEditId})" class="input_submit btn btn_submit">登録</button>
@@ -611,18 +722,19 @@ function goEditExpensePage(currentEditId){
     amount = document.getElementById("amount").value;
     paymentMethodId = document.getElementById("payment_method").value;
     place = document.getElementById("place").value;
-    console.log(itemId,paidAt,amount,paymentMethodId, place)
+    note = document.getElementById("note").value;
+    console.log(itemId,paidAt,amount,paymentMethodId, place,note)
     if (!itemId || !paidAt || !amount) { 
         errorMessage = "必須項目が未入力です"
         showError(errorMessage)
     } else {
-        showEditConfirm(currentEditId,itemId,paidAt,amount,paymentMethodId,place)
+        showEditConfirm(currentEditId,itemId,paidAt,amount,paymentMethodId,place,note,userId)
     }
     
 }
 
 //編集確認ページ
-function showEditConfirm(currentEditId,itemId,paidAt,amount,paymentMethodId,place){
+function showEditConfirm(currentEditId,itemId,paidAt,amount,paymentMethodId,place,note,userId){
     let foundItem = itemsList.find(m => String(m.itemId) === String(itemId));
     let item = foundItem ? foundItem.name : "";
     let foundPaymentMethod = paymentMethodList.find(m2 => String(m2.paymentMethodId) === String(paymentMethodId));
@@ -656,23 +768,28 @@ function showEditConfirm(currentEditId,itemId,paidAt,amount,paymentMethodId,plac
                 <span class="item_label">場所</span>
                 <span class="item_value">${place || "（未入力）"}</span>
             </div>
+            <div class="confirm_item">
+                <span class="item_label">備考</span>
+                <span class="item_value">${note || "（未入力）"}</span>
+            </div>
             <div class="button_group">
-                <button onclick="showEdit(${currentEditId},itemId,paidAt,amount,paymentMethodId,place)" class="btn btn_back">戻る</button>
-                <button onclick="updateExpense(${currentEditId},itemId,paidAt,amount,paymentMethodId,place)" class="btn btn_submit">登録</button>
+                <button onclick="showEdit('${currentEditId}','${itemId}','${paidAt}','${amount}','${paymentMethodId}','${place}','${note}','${userId}')" class="btn btn_back">戻る</button>
+                <button onclick="updateExpense('${currentEditId}','${itemId}','${paidAt}','${amount}','${paymentMethodId}','${place}','${note}','${userId}')" class="btn btn_submit">登録</button>
             </div>
         </div>
     </div>
     `
 }
 
-async function updateExpense(id, itemId, paidAt, amount, paymentMethodId, place){
+async function updateExpense(id, itemId, paidAt, amount, paymentMethodId, place,note,userId){
     const data = {
         paidAt: paidAt,
         itemId: Number(itemId),
         amount: Number(amount),
         paymentMethodId: Number(paymentMethodId),
         place: place,
-        userId:userId
+        note: note,
+        userId
     }
 
     try{
@@ -686,7 +803,7 @@ async function updateExpense(id, itemId, paidAt, amount, paymentMethodId, place)
 
         const result = await res.json()
         console.log(result)
-        showList()
+        showList(userId)
 
     }catch(error){
         console.error("更新失敗:",error)
@@ -712,7 +829,7 @@ function showDeleteConfirm(currentEditId){
     deleteButton.addEventListener('click', function(){
         deleteExpense(currentEditId);
         closeDialog();
-        showList();
+        showList(userId);
     });
 }
 
@@ -726,7 +843,7 @@ async function deleteExpense(id){
 
         const result = await res.json()
         console.log(result)
-        showList()
+        showList(userId)
 
     }catch(error){
         console.error("削除失敗:",error)
@@ -767,8 +884,4 @@ function createOptions(list, selectedId, valueKey, nameKey){
   });
 
   return options;
-}
-
-window.onload = function(){
-    showHome()
 }

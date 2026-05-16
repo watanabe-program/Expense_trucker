@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from database import SessionLocal
 from models import Expense,Items,Users,PaymentMethods,Logs
-from schemas import ExpenceCreate
+from schemas import ExpenceCreate,LoginData
 from database import engine,Base
 from datetime import datetime
 
@@ -22,8 +22,8 @@ Base.metadata.create_all(bind=engine)
 #マスタデータを入れる
 db = SessionLocal()
 
-user1 = Users(user_id = 1, user_name = '母',password= 'test')
-user2 = Users(user_id = 2, user_name = '自分',password= 'test')
+user1 = Users(user_id = 1, user_name = 'noriko',password= 'test')
+user2 = Users(user_id = 2, user_name = 'Tsuyoshi',password= 'test')
 if db.query(Users).count() == 0:
     db.add_all([user1,user2])
 
@@ -43,6 +43,22 @@ if db.query(PaymentMethods).count() == 0:
 
 db.commit()
 db.close()
+
+
+#ログイン認証
+@app.post("/login")
+def login(data:LoginData):
+    db = SessionLocal()
+
+    user = db.query(Users).filter(
+        Users.user_id == data.userId,
+        Users.password == data.password,
+    ).first()
+
+    if user:
+        return {"result":"ok"}
+    
+    return {'result':"ng"}
 
 #マスタデータ取得
 @app.get("/items")
@@ -75,12 +91,28 @@ def get_payment_methods():
     finally:
         db.close()
 
-#一覧を表示(Select)
-@app.get("/expenses")
-def get_expenses():
+@app.get("/users")
+def get_users():
     db = SessionLocal()
     try:
-        expenses = db.query(Expense).filter(Expense.is_deleted == 0).all()
+        users = db.query(Users).all()
+        return [
+            {
+                "userId":u.user_id,
+                "userName":u.user_name,
+                "password":u.password,
+            }
+            for u in users
+        ]
+    finally:
+        db.close()
+
+#一覧を表示(Select)
+@app.get("/expenses/{user_id}")
+def get_expenses(user_id:int):
+    db = SessionLocal()
+    try:
+        expenses = db.query(Expense).filter(Expense.user_id == user_id,Expense.is_deleted == 0).all()
         return [
             {
                 "id": e.expense_id,
@@ -89,6 +121,7 @@ def get_expenses():
                 "amount" :e.amount,
                 "paymentMethodId" :e.payment_method_id,
                 "place" :e.place,
+                "note" :e.note,
                 "isDeleted" :e.is_deleted,
             }
             for e in expenses
@@ -107,6 +140,7 @@ def create_expenses(expense:ExpenceCreate):
             amount=expense.amount,
             payment_method_id=expense.paymentMethodId,
             place = expense.place,
+            note = expense.note,
             user_id = expense.userId
         )
 
@@ -131,6 +165,7 @@ def update_expenses(expense_id:int ,expense:ExpenceCreate):
         db_expense.amount=expense.amount
         db_expense.payment_method_id=expense.paymentMethodId
         db_expense.place = expense.place
+        db_expense.note = expense.note
         db_expense.updated_at = today
         db.commit()
         return {'message' : 'updated'}

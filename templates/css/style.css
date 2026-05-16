@@ -284,3 +284,73 @@ body {
     margin: 0 auto;
 }
 
+/* ログインページ */
+/* ログインページ全体のレイアウト */
+.login_page {
+    background-color: #ffffff;
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+/* グレーのカード部分 */
+.login_card {
+    background-color: #ededed; /* グレーの背景 */
+    padding: 60px 40px;
+    width: 100%;
+    max-width: 600px; /* カードの幅 */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+    margin: 0 auto;
+}
+
+/* フォームエリア：containerの役割を兼任 */
+.form_area_login {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.label_text_login {
+    flex: 0 0 100px; /* ラベルの幅を固定 */
+    font-size: 18px;
+    font-weight: bold;
+    text-align: right;
+}
+
+/* 入力グループ内のラベルと入力欄の隙間 */
+.input_group_login {
+    display: flex;
+    flex-direction: row; /* 横並び */
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;  
+}
+
+/* ログインボタンの配置調整 */
+.input_submit_login {
+    width: 120px !important; /* ボタンの幅を小さく固定 */
+    height: 44px;
+    margin: 10px auto 0;
+}
+
+.input_field_login {
+    flex: 1; /* 入力欄を可能な限り広げる */
+    height: 40px;
+    border: 1px solid #000;
+    padding: 0 10px;
+}
+
+/* パスワード入力欄を伏せ字に */
+#password {
+    -webkit-text-security: disc; /* 必要に応じて type="password" と併用 */
+}
+

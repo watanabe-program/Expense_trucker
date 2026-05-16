@@ -6,5 +6,10 @@ class ExpenceCreate(BaseModel):
     itemId : int
     paymentMethodId : int
     userId : int
+    note : str
     isDeleted : int = 0
+
+class LoginData(BaseModel):
+    userId : int
+    password : str
 
