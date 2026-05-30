@@ -30,6 +30,13 @@ Expense_Truckerは、日々の支出を管理するためのデスクトップ�
 
 支出情報をカテゴリごとに管理し、期間別の集計や一覧表示を行うことで、日々の支出状況を把握できます。
 
+## スクリーンショット
+<img width="1919" height="1003" alt="スクリーンショット 2026-05-30 153435" src="https://github.com/user-attachments/assets/c4d0ca0a-0ab4-4def-8d89-6b6de91fb81f" />
+
+<img width="1041" height="969" alt="スクリーンショット 2026-05-30 153500" src="https://github.com/user-attachments/assets/933a4d1a-2b4f-4645-8237-d31d9ca725df" />
+
+<img width="1683" height="930" alt="スクリーンショット 2026-05-30 153528" src="https://github.com/user-attachments/assets/b86c06c9-7bfd-44d8-994f-c94caf7d8082" />
+
 
 ## 学習内容
 
