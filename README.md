@@ -36,7 +36,7 @@ Expense_Truckerは、日々の支出を管理するためのデスクトップ�
 ### 支出入力画面
 <img src="https://github.com/user-attachments/assets/933a4d1a-2b4f-4645-8237-d31d9ca725df" width="500">
 
-### 支出集計画面
+### 支出一覧画面
 <img src="https://github.com/user-attachments/assets/b86c06c9-7bfd-44d8-994f-c94caf7d8082" width="800">
 
 
