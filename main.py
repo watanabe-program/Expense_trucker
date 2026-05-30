@@ -6,6 +6,9 @@ from models import Expense,Items,Users,PaymentMethods
 from schemas import ExpenceCreate,LoginData
 from datetime import datetime
 from log import create_log
+import configparser
+import os
+import sys
 
 app = FastAPI()
 today = datetime.now().strftime('%Y$m%d')
@@ -18,33 +21,53 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+BASE_DIR = getattr(
+    sys,
+    '_MEIPASS',
+    os.path.dirname(os.path.abspath(__file__))
+)
+INI_PATH = os.path.join(BASE_DIR, "master.ini")
+
+MASTER_DB_FILE = "master.db"
+
+is_new_db = not os.path.exists(MASTER_DB_FILE)
+
 ExpensesBase.metadata.create_all(bind=expenses_engine)
 MasterBase.metadata.create_all(bind=master_engine)
 
+config = configparser.ConfigParser()
+config.read(INI_PATH,encoding = 'utf-8')
+
+
 #マスタデータを入れる
-db = MasterSessionLocal()
+def insert_master():
+    db = MasterSessionLocal()
+    dict_user = dict(config.items('user'))
+    i1 = 1
+    for key1,value1 in dict_user.items():
+        user = Users(user_id = i1, user_name =key1,password= value1)
+        db.add(user)
+        i1 += 1
 
-user1 = Users(user_id = 1, user_name = 'noriko',password= 'test')
-user2 = Users(user_id = 2, user_name = 'Tsuyoshi',password= 'test')
-if db.query(Users).count() == 0:
-    db.add_all([user1,user2])
+    dict_items = dict(config.items('items'))
+    i2 = 1
+    for key2,value2 in dict_items.items():
+        item = Items(item_id = i2, item_name = value2)
+        db.add(item)
+        i2 += 1
 
-item1 = Items(item_id = 1, item_name = '食費')
-item2 = Items(item_id = 2, item_name = '水道代・光熱費')
-item3 = Items(item_id = 3, item_name = 'その他')
+    dict_payment_methods = dict(config.items('paymentmethods'))
+    i3 = 1
+    for key2,value3 in dict_payment_methods.items():
+        payment_method = PaymentMethods(payment_method_id = i3, payment_method_name = value3)
+        db.add(payment_method)
+        i3 += 1
 
-if db.query(Items).count() == 0:
-    db.add_all([item1,item2,item3])
+    db.commit()
+    db.close()
 
-payment_method1 = PaymentMethods(payment_method_id = 1, payment_method_name = '現金')
-payment_method2 = PaymentMethods(payment_method_id = 2, payment_method_name = 'クレジットカード')
-payment_method3 = PaymentMethods(payment_method_id = 3, payment_method_name = 'コード決済')
-payment_method4 = PaymentMethods(payment_method_id = 4, payment_method_name = 'その他')
-if db.query(PaymentMethods).count() == 0:
-    db.add_all([payment_method1,payment_method2,payment_method3,payment_method4])
-
-db.commit()
-db.close()
+if is_new_db:
+    insert_master()
 
 logger = create_log()
 #ログイン認証

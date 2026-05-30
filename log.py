@@ -4,10 +4,11 @@ from datetime import datetime,timedelta
 from pathlib import Path
 
 def create_log():
-  today = datetime.now()
+  today = datetime.now()    
   #2か月以上前のログテーブルは削除
   kaihai_date = today - timedelta(days=60)
   logs_dir = Path('logs')
+  logs_dir.mkdir(exist_ok=True)
   for f in logs_dir.iterdir():
     file_time = datetime.fromtimestamp(f.stat().st_mtime)
     if file_time < kaihai_date:
