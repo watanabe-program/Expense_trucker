@@ -1,5 +1,38 @@
 # Expense_Trucker
 
+Expense_Trucker is a desktop application designed to help users manage their daily expenses.
+
+The application was developed using FastAPI for the backend and JavaScript with PyWebView for the frontend. It runs entirely in a local environment, allowing users to manage their expenses without relying on cloud services.
+
+SQLite is used as the database, and all expense data is stored locally on the user's machine.
+
+## Features
+
+* Register expenses
+* Edit expenses
+* Delete expenses (logical deletion)
+* View expense history
+* Generate expense summaries and reports
+
+## Technologies Used
+
+* Python
+* FastAPI
+* JavaScript
+* PyWebView
+* SQLite
+* SQLAlchemy
+* HTML/CSS
+
+## Overview
+
+This application was developed to simplify personal expense tracking and household budget management.
+
+Users can categorize expenses, browse expense records, and view aggregated spending data for specific periods. These features make it easier to understand and monitor daily spending habits.
+
+
+# Expense_Trucker
+
 Expense_Truckerは、日々の支出を管理するためのデスクトップアプリケーションです。
 
 バックエンドにはPythonのFastAPI、フロントエンドにはJavaScriptとPyWebViewを採用し、ローカル環境で動作する家計簿アプリとして開発しました。
